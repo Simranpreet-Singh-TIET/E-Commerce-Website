@@ -6,6 +6,8 @@ from math import ceil
 from django.views.decorators.csrf import csrf_exempt
 import json
 from paytm import Checksum
+
+MERCHANT_KEY='AlulEP3fgbQClt4w'
 def index(request):
     # return HttpResponse("Shop Index")
     # product=Product.objects.all()
@@ -73,18 +75,23 @@ def tracker(request):
                 updates = []
                 for item in update:
                     updates.append({'text': item.update_desc, 'time': item.timestamp})
-                    response = json.dumps([updates, order[0].items_json], default=str)
-                return HttpResponse(responses)
+                    response = json.dumps({"status":"success", "updates": updates, "itemsJson": order[0].items_json}, default=str)
+                return HttpResponse(response)
             else:
-                return HttpResponse('{}')
+                return HttpResponse('{"status":"noitem"}')
         except Exception as e:
-            return HttpResponse('{}')
+            return HttpResponse('{"status":"error"}')
 
-    return render(request,"shop/tracker.html")
+    return render(request,'shop/tracker.html')
+
+
+
 def productview(request, myid):
     product=Product.objects.filter(id=myid)
     print(product)
     return render(request, "shop/prodview.html",{'product':product[0]})
+
+
 def checkout(request):
     if request.method=="POST":
         items_json = request.POST.get('itemsJson', '')
@@ -107,7 +114,7 @@ def checkout(request):
         # Request paytm to transfer the amount to your account after payment by user
         param_dict = {
 
-                'MID': 'Your-Merchant-Id-Here',
+                'MID': 'LGRqyj59594840154874',
                 'ORDER_ID': str(order.order_id),
                 'TXN_AMOUNT': str(amount),
                 'CUST_ID': email,
